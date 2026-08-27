@@ -61,7 +61,7 @@ The installed consumer required explicit `KUJO_MODULE_PATH` entries for Kennel p
 
 ## 9. Recommended Changes Before Scaling
 
-Validate whether Kujo should automatically expose installed package roots and whether Kennel exports should generate importable package namespaces. Keep those as platform improvements; do not add provider-specific workarounds to AI SDK core.
+Validate whether Kujo should automatically expose installed package roots and whether Kennel exports should generate importable package namespaces. Both providers currently pass with explicit `KUJO_MODULE_PATH`; keep these as platform improvements and do not add provider-specific workarounds to AI SDK core.
 
 ## 10. Verdict
 

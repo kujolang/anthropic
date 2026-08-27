@@ -71,7 +71,7 @@ Native tests: `6/6` passed. Driver/integration tests: `6/6` passed. Offline rele
 
 ## Clean-Room Installation
 
-`scripts/verify_installed_package.sh` initialized a temporary project outside the source checkouts, installed immutable tag `v0.1.1`, installed twice from the lockfile, validated, set only the installed package roots in `KUJO_MODULE_PATH`, and ran the installed consumer smoke: `1/1` passed. The final lockfile recorded the exact Anthropic and AI SDK refs after the release tag was pushed.
+`scripts/verify_installed_package.sh` initialized a temporary project outside the source checkouts, installed immutable tag `v0.1.1`, installed twice from the lockfile, validated, set only the installed package roots in `KUJO_MODULE_PATH`, and ran the installed consumer smoke: `1/1` passed. The final lockfile recorded Anthropic tag object `478c44f59e1b834bb879976bdecb7f81815d60d9` and AI SDK tag object `afc49df688ac73ccfe5ab570eae74df4391aa3c0`.
 
 ## Live Validation
 
