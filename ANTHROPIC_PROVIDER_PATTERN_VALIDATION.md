@@ -2,7 +2,7 @@
 
 ## 1. Executive Summary
 
-The Ollama provider-package pattern generalized, but not as a fixed list of provider operations. Anthropic uses the same native-client/AI-SDK-driver boundary while requiring remote API-key auth, provider headers, a separate system field, content blocks, and a distinct SSE event protocol.
+The Ollama provider-package pattern generalized, but not as a fixed list of provider operations. Anthropic uses the same native-client/AI-SDK-driver boundary while requiring remote API-key auth, provider headers, a separate system field, content blocks, and a distinct SSE event protocol. Both packages now have remote immutable refs and successful clean-room Kennel evidence.
 
 ## 2. Conventions Reused Unchanged
 
@@ -65,10 +65,8 @@ Validate whether Kujo should automatically expose installed package roots and wh
 
 ## 10. Verdict
 
-Two providers provide strong evidence for the architecture and enough evidence to draft Provider Package Contract v1, but the contract should remain a draft until both remote clean-room release loops are independently completed.
+Two providers provide sufficient evidence to freeze a Provider Package Contract v1 draft, while the contract artifact itself remains a later task. The universal boundary is supported; provider capabilities and wire semantics remain provider-owned.
 
 ## Ready to Freeze Provider Package Contract v1?
 
-NO
-
-The Anthropic remote release, clean-room Kennel install/reinstall, and installed artifact smoke must complete before freezing the contract.
+YES

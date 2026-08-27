@@ -7,7 +7,7 @@ Native Anthropic Messages API support for Kujo, with a first-class Kujo AI SDK p
 The public Kennel registry is not operated yet. From a clean project, install the immutable GitHub tag:
 
 ```bash
-kujo run /path/to/kennel/kennel.kujo --interpreter -- add github:kujolang/anthropic@v0.1.0 --alias anthropic
+kujo run /path/to/kennel/kennel.kujo --interpreter -- add github:kujolang/anthropic@v0.1.1 --alias anthropic
 kujo run /path/to/kennel/kennel.kujo --interpreter -- install
 ```
 

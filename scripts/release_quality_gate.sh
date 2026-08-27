@@ -9,4 +9,4 @@ cd "$ROOT"
 "$KUJO_BIN" test-run tests/driver_tests.kujo
 "$KUJO_BIN" check src/anthropic.kujo --quiet
 "$KUJO_BIN" check src/provider.kujo --quiet
-echo "Anthropic offline release gate: PASS (10 deterministic tests)"
+echo "Anthropic offline release gate: PASS (12 deterministic tests)"

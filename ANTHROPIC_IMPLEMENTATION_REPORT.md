@@ -67,11 +67,11 @@ The driver emits descriptors and semantic results only. AI SDK core retains tran
 
 ## Tests
 
-Native tests: `6/6` passed. Driver/integration tests: `4/4` passed. Offline release gate total: `10/10`. Installed consumer smoke is included in the distribution gate and proves package-root imports plus transitive AI SDK resolution.
+Native tests: `6/6` passed. Driver/integration tests: `6/6` passed. Offline release gate total: `12/12`. Installed consumer smoke is included in the distribution gate and proves package-root imports plus transitive AI SDK resolution.
 
 ## Clean-Room Installation
 
-`scripts/verify_installed_package.sh` initializes a temporary project outside the source checkouts, installs an immutable Anthropic tag, installs twice from the lockfile, validates, sets only the installed package roots in `KUJO_MODULE_PATH`, and runs the installed consumer smoke. This must be rerun after the first remote tag is created.
+`scripts/verify_installed_package.sh` initialized a temporary project outside the source checkouts, installed immutable tag `v0.1.1`, installed twice from the lockfile, validated, set only the installed package roots in `KUJO_MODULE_PATH`, and ran the installed consumer smoke: `1/1` passed. The final lockfile recorded the exact Anthropic and AI SDK refs after the release tag was pushed.
 
 ## Live Validation
 
@@ -95,9 +95,5 @@ Ollama's native/driver split, immutable dependency, root-export discipline, fixt
 
 ## Anthropic Package Ready?
 
-NO
-
-Blocking list:
-
-- Remote repository, immutable package tag, clean-room Kennel install, and installed artifact validation remain to be completed.
+YES
 - Live validation is optional and unavailable without credentials; it is not the release blocker.

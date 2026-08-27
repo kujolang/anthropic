@@ -1,6 +1,6 @@
 [package]
 name = "anthropic"
-version = "0.1.0"
+version = "0.1.1"
 description = "Native Anthropic Messages API client for Kujo with an AI SDK provider driver."
 license = "MIT"
 authors = ["Kujolang <contact@kujolang.ai>"]

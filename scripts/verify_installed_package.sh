@@ -3,7 +3,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 KUJO_BIN="${KUJO_BIN:-$(command -v kujo)}"
 KENNEL_SCRIPT="${KENNEL_SCRIPT:-$ROOT/../kennel/kennel.kujo}"
-ANTHROPIC_REF="${ANTHROPIC_REF:-v0.1.0}"
+ANTHROPIC_REF="${ANTHROPIC_REF:-v0.1.1}"
 CLEAN="$(mktemp -d "${TMPDIR:-/tmp}/kujo-anthropic-installed.XXXXXX")"
 trap 'rm -rf "$CLEAN"' EXIT
 cd "$CLEAN"
