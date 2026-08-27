@@ -11,7 +11,7 @@ kujo run /path/to/kennel/kennel.kujo --interpreter -- add github:kujolang/anthro
 kujo run /path/to/kennel/kennel.kujo --interpreter -- install
 ```
 
-For installed consumers, set `KUJO_MODULE_PATH` to the Kennel-installed `anthropic` and `ai-sdk` roots. The reusable `scripts/verify_installed_package.sh` demonstrates the complete flow.
+Installed consumers are importable from the Kennel project directory without manually setting `KUJO_MODULE_PATH`; Kujo derives roots from the nearest `kennel.lock`. The reusable `scripts/verify_installed_package.sh` demonstrates the complete flow.
 
 ## 30-second quick start
 

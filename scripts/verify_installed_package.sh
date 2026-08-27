@@ -12,6 +12,6 @@ cd "$CLEAN"
 "$KUJO_BIN" run "$KENNEL_SCRIPT" --interpreter -- install --project-dir "$CLEAN"
 "$KUJO_BIN" run "$KENNEL_SCRIPT" --interpreter -- install --project-dir "$CLEAN"
 "$KUJO_BIN" run "$KENNEL_SCRIPT" --interpreter -- validate --project-dir "$CLEAN"
-KUJO_MODULE_PATH="$CLEAN/kennel_packages/anthropic:$CLEAN/kennel_packages/ai-sdk" \
-  "$KUJO_BIN" test-run "$CLEAN/kennel_packages/anthropic/tests/installed_consumer_smoke.kujo"
+(cd "$CLEAN" && env -u KUJO_MODULE_PATH \
+  "$KUJO_BIN" test-run "$CLEAN/kennel_packages/anthropic/tests/installed_consumer_smoke.kujo")
 echo "Installed-package Kennel smoke: PASS"

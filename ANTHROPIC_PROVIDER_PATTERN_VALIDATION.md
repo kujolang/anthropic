@@ -59,11 +59,11 @@ Anthropic requires `x-api-key`, `anthropic-version: 2023-06-01`, remote HTTPS, M
 
 ## 8. Platform Friction
 
-The installed consumer required explicit `KUJO_MODULE_PATH` entries for Kennel package roots, and root shim imports required explicit `export` statements. This is runtime/package ergonomics, not an Anthropic or Ollama provider issue. Kennel did not need changes.
+The installed consumer still requires explicit `export` statements in root shims, but no longer requires manual `KUJO_MODULE_PATH` entries: Kujo discovers the locked package roots. This is runtime/package ergonomics, not an Anthropic or Ollama provider issue. Kennel did not need changes.
 
 ## 9. Recommended Changes Before Scaling
 
-Validate whether Kujo should automatically expose installed package roots and whether Kennel exports should generate importable package namespaces. Both providers currently pass with explicit `KUJO_MODULE_PATH`; keep these as platform improvements and do not add provider-specific workarounds to AI SDK core.
+Kujo now exposes locked installed package roots automatically. Kennel exports still do not generate runtime namespaces, so explicit root shims remain. Keep namespace generation as a separate platform improvement and do not add provider-specific workarounds to AI SDK core.
 
 ## 10. Verdict
 

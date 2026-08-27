@@ -71,7 +71,7 @@ Native tests: `6/6` passed. Driver/integration tests: `6/6` passed. Offline rele
 
 ## Clean-Room Installation
 
-`scripts/verify_installed_package.sh` initialized a temporary project outside the source checkouts, installed immutable tag `v0.1.1`, installed twice from the lockfile, validated, set only the installed package roots in `KUJO_MODULE_PATH`, and ran the installed consumer smoke: `1/1` passed. The final lockfile recorded Anthropic tag object `478c44f59e1b834bb879976bdecb7f81815d60d9` and AI SDK tag object `afc49df688ac73ccfe5ab570eae74df4391aa3c0`.
+`scripts/verify_installed_package.sh` initialized a temporary project outside the source checkouts, installed immutable tag `v0.1.1`, installed twice from the lockfile, validated, unset `KUJO_MODULE_PATH`, and ran the installed consumer smoke: `1/1` passed after the Kujo lockfile-aware resolver change. The final lockfile recorded Anthropic tag object `478c44f59e1b834bb879976bdecb7f81815d60d9` and AI SDK tag object `afc49df688ac73ccfe5ab570eae74df4391aa3c0`.
 
 ## Live Validation
 
@@ -91,7 +91,7 @@ This is an early package. Live API compatibility, model availability, typed clie
 
 ## Provider Pattern Lessons
 
-Ollama's native/driver split, immutable dependency, root-export discipline, fixture gate, installed consumer smoke, and `KUJO_MODULE_PATH` behavior generalized. Anthropic proves that the pattern must allow remote required auth, provider headers/versioning, optional capabilities, separate system fields, native content-block fidelity, and provider-specific SSE taxonomies.
+Ollama's native/driver split, immutable dependency, root-export discipline, fixture gate, installed consumer smoke, and lockfile-driven package discovery generalized. Anthropic proves that the pattern must allow remote required auth, provider headers/versioning, optional capabilities, separate system fields, native content-block fidelity, and provider-specific SSE taxonomies.
 
 ## Anthropic Package Ready?
 
