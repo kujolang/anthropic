@@ -11,7 +11,7 @@ Native Anthropic Messages API support for Kujo, with a first-class Kujo AI SDK p
 An operated public package registry is not available yet, so this release is installed from its immutable GitHub tag:
 
 ```bash
-kujo run /path/to/kennel/kennel.kujo --interpreter -- add github:kujolang/anthropic@v0.1.2 --alias anthropic
+kujo run /path/to/kennel/kennel.kujo --interpreter -- add github:kujolang/anthropic@v0.1.3 --alias anthropic
 kujo run /path/to/kennel/kennel.kujo --interpreter -- install
 ```
 
@@ -44,9 +44,17 @@ Use `create_client` for explicit configuration and `client_messages`, `client_me
 from provider import anthropic_provider
 from src.ai_sdk import create_client, create_message, chat_completion
 
-provider := anthropic_provider({"model": env("ANTHROPIC_MODEL")})
-client := create_client(provider, env("ANTHROPIC_API_KEY"))
-result := chat_completion(client, [create_message("user", "Hello!")], {})
+provider := anthropic_provider({
+    "model": env("ANTHROPIC_MODEL")
+})
+client := create_client(
+    provider,
+    env("ANTHROPIC_API_KEY")
+)
+messages := [
+    create_message("user", "Hello!")
+]
+result := chat_completion(client, messages, {})
 print(result["output_text"])
 ```
 
