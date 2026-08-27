@@ -1,0 +1,31 @@
+test_setup { from src.anthropic import create_client, client_messages, client_messages_stream, client_count_tokens, redact; from src.provider import parse_stream; from tests.fixtures import fake_response, fake_stream }
+
+test "client config uses Anthropic headers and redacts key" {
+	client := create_client({"api_key": "secret-anthropic-key"})
+	assert_equal(client["base_url"], "https://api.anthropic.com")
+	assert_equal(client["api_version"], "2023-06-01")
+	assert_equal(redact("Bearer secret-anthropic-key", client["api_key"]), "Bearer [REDACTED]")
+}
+test "native messages preserves content blocks and request id" {
+	client := create_client({"api_key": "secret", "transport": fake_response})
+	result := client_messages(client, {"model": "claude-test", "max_tokens": 32, "system": "Be concise", "messages": [{"role": "user", "content": "Hello"}]})
+	assert_true(result["ok"]); assert_equal(result["request_id"], "req_fixture"); assert_equal(result["data"]["content"][1]["type"], "tool_use")
+}
+test "native stream parser handles multiple event frames" {
+	parsed := parse_stream(["event: ping\ndata: {\"type\":\"ping\"}\n\n", "event: message_stop\ndata: {\"type\":\"message_stop\"}\n\n"], "")
+	assert_true(parsed["ok"]); assert_equal(len(parsed["events"]), 2); assert_equal(parsed["events"][0]["event"], "ping")
+}
+test "native streaming preserves provider events" {
+	client := create_client({"api_key": "secret", "transport": fake_stream})
+	result := client_messages_stream(client, {"model": "claude-test", "max_tokens": 32, "messages": [{"role": "user", "content": "Hi"}]})
+	assert_true(result["ok"]); assert_equal(result["stream"]["events"][1]["data"]["delta"]["text"], "native")
+}
+test "count tokens uses native endpoint" {
+	client := create_client({"api_key": "secret", "transport": fake_response})
+	result := client_count_tokens(client, {"model": "claude-test", "messages": []})
+	assert_equal(result["operation"], "count_tokens")
+}
+test "unsafe remote HTTP is rejected" {
+	client := create_client({"api_key": "secret", "base_url": "http://example.test"})
+	assert_true(client["validation_error"] != "")
+}

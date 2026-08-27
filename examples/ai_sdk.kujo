@@ -1,0 +1,7 @@
+from provider import anthropic_provider
+from src.ai_sdk import create_client, create_message, chat_completion
+
+provider := anthropic_provider({"model": env("ANTHROPIC_MODEL")})
+client := create_client(provider, env("ANTHROPIC_API_KEY"))
+result := chat_completion(client, [create_message("user", "Hello from the normalized Kujo AI SDK.")], {})
+print(result["output_text"])

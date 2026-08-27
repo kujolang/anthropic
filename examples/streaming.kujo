@@ -1,0 +1,4 @@
+from anthropic import messages_stream
+
+result := messages_stream({"model": env("ANTHROPIC_MODEL"), "max_tokens": 128, "messages": [{"role": "user", "content": "Say hello briefly."}]})
+for event in result["stream"]["events"] { print(event["event"], event["data"]) }

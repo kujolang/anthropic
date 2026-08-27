@@ -1,0 +1,5 @@
+from anthropic import create_client, client_messages
+
+client := create_client({"api_key": env("ANTHROPIC_API_KEY")})
+result := client_messages(client, {"model": env("ANTHROPIC_MODEL"), "max_tokens": 256, "system": "Be concise.", "messages": [{"role": "user", "content": "Explain Kujo in one sentence."}]})
+print(result["data"])

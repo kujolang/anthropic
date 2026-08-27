@@ -1,0 +1,52 @@
+[package]
+name = "anthropic"
+version = "0.1.0"
+description = "Native Anthropic Messages API client for Kujo with an AI SDK provider driver."
+license = "MIT"
+authors = ["Kujolang <contact@kujolang.ai>"]
+repository = "https://github.com/kujolang/anthropic"
+keywords = ["kujo", "anthropic", "claude", "ai-sdk"]
+categories = ["ai", "developer-tools"]
+readme = "README.md"
+
+[package.status]
+stage = "experimental"
+stability = "early"
+public_api = true
+notes = "Native Anthropic Messages API and AI SDK driver are early APIs."
+
+[kujo]
+minimum_version = "0.1.0"
+entry = "anthropic.kujo"
+sources = ["src", "."]
+includes = ["README.md", "CHANGELOG.md", "docs", "examples", "tests", "AGENTS.md"]
+excludes = [".git", "kennel_packages", "dist", "build", "node_modules"]
+
+[build]
+command = ""
+output = "dist"
+artifacts = []
+
+[dependencies]
+ai-sdk = { source = "github:kujolang/ai-sdk", ref = "v1.1.0" }
+
+[dev-dependencies]
+
+[scripts]
+test = "kujo test-run tests/native_tests.kujo"
+test-driver = "kujo test-run tests/driver_tests.kujo"
+verify-offline = "bash scripts/release_quality_gate.sh"
+
+[package.exports]
+anthropic = "src/anthropic.kujo"
+client = "src/anthropic.kujo"
+provider = "src/provider.kujo"
+
+[registry]
+index = ""
+publish = ""
+
+[trust]
+checksum = ""
+signature = ""
+signing_key = ""

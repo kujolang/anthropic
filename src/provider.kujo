@@ -1,0 +1,54 @@
+# Anthropic-native AI SDK provider driver. Hooks are pure descriptors/decoders.
+
+func get(obj, key, fallback) { if type(obj) == "dict" && has_key(obj, key) { return obj[key] }; return fallback }
+func text_blocks(content) { result := []; if type(content) == "string" { return [{"type": "text", "text": content}] }; if type(content) == "array" { for block in content { result = push(result, block) }; return result }; return [] }
+func encode_tools(tools) { result := []; if type(tools) != "array" { return result }; for tool in tools { if type(tool) == "dict" && get(tool, "type", "") == "function" { fn := get(tool, "function", {}); result = push(result, {"name": get(fn, "name", ""), "description": get(fn, "description", ""), "input_schema": get(fn, "parameters", {"type": "object"})}) } else { result = push(result, tool) } }; return result }
+func encode_messages(messages) {
+	result := []; system := []
+	if type(messages) != "array" { return {"messages": result, "system": system} }
+	for message in messages { role := get(message, "role", "user"); content := get(message, "content", "")
+		if role == "system" { for block in text_blocks(content) { system = push(system, block) } } else { result = push(result, {"role": role, "content": text_blocks(content)}) }
+	}
+	return {"messages": result, "system": system}
+}
+func provider_impl(config) {
+	if type(config) != "dict" { config := {} }
+	host := get(config, "base_url", "https://api.anthropic.com")
+	return {"name": "anthropic", "base_url": host, "chat_path": "/v1/messages", "api_key_env": "ANTHROPIC_API_KEY", "default_model": get(config, "model", ""), "api_version": get(config, "api_version", "2023-06-01"), "allow_insecure_localhost": false, "capabilities": {"streaming": true, "tool_calls": true, "json_mode": true}, "driver": driver()}
+}
+func describe(provider) { return {"id": "anthropic-native", "protocol": "anthropic-messages", "auth": {"mode": "x-api-key", "allow_anonymous": false}, "api_version": get(provider, "api_version", "2023-06-01"), "capabilities": provider["capabilities"]} }
+func validate(provider) { if type(provider) != "dict" || get(provider, "base_url", "") == "" { return {"ok": false, "errors": [{"field": "base_url", "message": "Anthropic provider requires a base URL."}]} }; return {"ok": true, "errors": []} }
+func encode_chat(context) {
+	options := context["resolved_options"]; native_messages := []; system_blocks := []
+	for message in context["messages"] { role := get(message, "role", "user"); content := get(message, "content", ""); blocks := []; if type(content) == "string" { blocks = [{"type": "text", "text": content}] } else { if type(content) == "array" { blocks = content } }; if role == "system" { for block in blocks { system_blocks = push(system_blocks, block) } } else { native_messages = push(native_messages, {"role": role, "content": blocks}) } }
+	payload := {"model": get(options, "model", get(context["provider"], "default_model", "")), "max_tokens": get(options, "max_tokens", 400), "messages": native_messages, "stream": get(options, "stream", false)}
+	if len(system_blocks) > 0 { payload["system"] := system_blocks }
+	for key in ["temperature", "top_p", "top_k", "stop_sequences", "metadata", "thinking", "output_config", "cache_control", "tool_choice"] { if has_key(options, key) { payload[key] := options[key] } }
+	if has_key(options, "response_format") { payload["output_config"] := {"format": options["response_format"]} }
+	if has_key(options, "structured_output_schema") { payload["output_config"] := {"format": {"type": "json_schema", "schema": options["structured_output_schema"]}} }
+	if has_key(options, "tools") { native_tools := []; for tool in options["tools"] { if type(tool) == "dict" && get(tool, "type", "") == "function" { fn := get(tool, "function", {}); native_tools = push(native_tools, {"name": get(fn, "name", ""), "description": get(fn, "description", ""), "input_schema": get(fn, "parameters", {"type": "object"})}) } else { native_tools = push(native_tools, tool) } }; payload["tools"] := native_tools }
+	return {"url": context["provider"]["base_url"] + "/v1/messages", "method": "POST", "headers": {"x-api-key": context["credential"], "anthropic-version": context["provider"]["api_version"], "Content-Type": "application/json"}, "protected_headers": ["x-api-key", "anthropic-version", "Content-Type"], "body": to_json(payload), "stream_mode": payload["stream"]}
+}
+func output_text(content) { result := ""; if type(content) != "array" { return result }; for block in content { if get(block, "type", "") == "text" { result = result + get(block, "text", "") } }; return result }
+func normalized_tools(content) { result := []; if type(content) != "array" { return result }; for block in content { if get(block, "type", "") == "tool_use" { result = push(result, {"id": get(block, "id", ""), "type": "function", "function": {"name": get(block, "name", ""), "arguments": to_json(get(block, "input", {}))}}) } }; return result }
+func finish_reason(reason) { if reason == "max_tokens" { return "length" }; if reason == "tool_use" { return "tool_calls" }; if reason == "stop_sequence" || reason == "end_turn" { return "stop" }; return reason }
+func usage(data) { u := get(data, "usage", {}); input := get(u, "input_tokens", 0); output := get(u, "output_tokens", 0); return {"input_tokens": input, "output_tokens": output, "total_tokens": input + output} }
+func decode_chat(context) { data := context["data"]; content := get(data, "content", []); text := ""; tool_calls := []; for block in content { if get(block, "type", "") == "text" { text = text + get(block, "text", "") }; if get(block, "type", "") == "tool_use" { tool_calls = push(tool_calls, {"id": get(block, "id", ""), "type": "function", "function": {"name": get(block, "name", ""), "arguments": to_json(get(block, "input", {}))}}) } }; reason := get(data, "stop_reason", ""); if reason == "end_turn" || reason == "stop_sequence" { reason = "stop" }; if reason == "max_tokens" { reason = "length" }; if reason == "tool_use" { reason = "tool_calls" }; raw_usage := get(data, "usage", {}); input := get(raw_usage, "input_tokens", 0); output := get(raw_usage, "output_tokens", 0); return {"ok": true, "request_id": "", "model": get(data, "model", context["fallback_model"]), "output_text": text, "finish_reason": reason, "tool_calls": tool_calls, "usage": {"input_tokens": input, "output_tokens": output, "total_tokens": input + output}, "raw_provider": data} }
+func decode_error(context) { data := context["data"]; if type(data) != "dict" || has_key(data, "error") == 0 { return {"ok": false, "matched": false} }; err := data["error"]; message := get(err, "message", "Anthropic request failed"); category := "provider"; if get(err, "type", "") == "authentication_error" || context["status_code"] == 401 { category = "auth" }; return {"ok": false, "matched": true, "category": category, "message": message, "provider_code": get(err, "type", "anthropic_error"), "raw_provider": data} }
+func parse_stream(chunks, body) {
+	combined := ""; if type(chunks) == "array" { for chunk in chunks { combined = combined + chunk } } else { combined = body }
+	events := []; pending := ""; for piece in split(combined, "\n\n") { block := trim(pending + piece); pending := ""; if block == "" { continue }; event_name := ""; data_text := ""; for line in split(block, "\n") { if starts_with(line, "event:") { event_name = trim(substring(line, 6, len(line))) }; if starts_with(line, "data:") { data_text = trim(substring(line, 5, len(line))) } }; if data_text != "" { parsed := null; try { parsed = parse_json(data_text) } except err { return {"ok": false, "events": []} }; events = push(events, {"event": event_name, "data": parsed}) } }
+	return {"ok": true, "events": events}
+}
+func decode_stream(context) { combined := ""; chunks := get(context, "chunks", []); if type(chunks) == "array" { for chunk in chunks { combined = combined + chunk } } else { combined = get(context, "body_text", "") }; text := ""; tools := []; model := context["fallback_model"]; reason := ""; final_usage := {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}; events := []; for block in split(combined, "\n\n") { block := trim(block); if block == "" { continue }; data_text := ""; for line in split(block, "\n") { if starts_with(line, "data:") { data_text = trim(substring(line, 5, len(line))) } }; if data_text == "" { continue }; data := null; try { data = parse_json(data_text) } except err { return {"ok": false} }; events = push(events, data); if has_key(data, "message") { model = get(data["message"], "model", model); raw_start_usage := get(data["message"], "usage", {}); final_usage = {"input_tokens": get(raw_start_usage, "input_tokens", 0), "output_tokens": get(raw_start_usage, "output_tokens", 0), "total_tokens": get(raw_start_usage, "input_tokens", 0) + get(raw_start_usage, "output_tokens", 0)} }; if get(data, "type", "") == "content_block_delta" { delta := get(data, "delta", {}); if get(delta, "type", "") == "text_delta" || get(delta, "type", "") == "thinking_delta" { text = text + get(delta, "text", get(delta, "thinking", "")) }; if get(delta, "type", "") == "input_json_delta" { tools = push(tools, {"type": "function", "function": {"arguments": get(delta, "partial_json", "")}}) } }; if get(data, "type", "") == "message_delta" { reason = get(get(data, "delta", {}), "stop_reason", ""); if reason == "end_turn" { reason = "stop" }; if reason == "max_tokens" { reason = "length" }; if reason == "tool_use" { reason = "tool_calls" }; if has_key(data, "usage") { raw_end_usage := data["usage"]; final_usage = {"input_tokens": get(raw_end_usage, "input_tokens", final_usage["input_tokens"]), "output_tokens": get(raw_end_usage, "output_tokens", 0), "total_tokens": get(raw_end_usage, "input_tokens", final_usage["input_tokens"]) + get(raw_end_usage, "output_tokens", 0)} } } }; return {"ok": true, "request_id": "", "model": model, "output_text": text, "finish_reason": reason, "tool_calls": tools, "usage": final_usage, "raw_provider": {"stream_events": events}} }
+func driver() { return {"contract": "ai-sdk-provider-driver", "version": "1.0.0", "id": "anthropic-native", "describe": describe, "validate": validate, "encode_chat": encode_chat, "decode_chat": decode_chat, "decode_error": decode_error, "decode_stream": decode_stream} }
+
+export anthropic_provider := provider_impl
+export anthropic_driver := driver
+export encode_messages := encode_messages
+export parse_stream := parse_stream
+export encode_tools := encode_tools
+export output_text := output_text
+export normalized_tools := normalized_tools
+export finish_reason := finish_reason
+export usage := usage

@@ -1,0 +1,6 @@
+func fake_chat(url, options) { return Ok({"_status": 200, "_headers": {"request-id": "req_ai"}, "_body": "{\"id\":\"msg_ai\",\"model\":\"claude-test\",\"content\":[{\"type\":\"text\",\"text\":\"normalized\"}],\"stop_reason\":\"end_turn\",\"usage\":{\"input_tokens\":3,\"output_tokens\":2}}"}) }
+func fake_response(url, options) { return Ok({"_status": 200, "_headers": {"request-id": "req_fixture"}, "_body": "{\"id\":\"msg_1\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"claude-test\",\"content\":[{\"type\":\"text\",\"text\":\"Hello\"},{\"type\":\"tool_use\",\"id\":\"toolu_1\",\"name\":\"lookup\",\"input\":{\"city\":\"Detroit\"}}],\"stop_reason\":\"tool_use\",\"usage\":{\"input_tokens\":12,\"output_tokens\":7}}"}) }
+func fake_stream(url, options) { return Ok({"_status": 200, "_stream_chunks": ["event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"model\":\"claude-test\",\"usage\":{\"input_tokens\":3}}}\n\n", "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"delta\":{\"type\":\"text_delta\",\"text\":\"native\"}}\n\n", "event: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"end_turn\"},\"usage\":{\"output_tokens\":2}}\n\n"]}) }
+export fake_chat := fake_chat
+export fake_stream := fake_stream
+export fake_response := fake_response

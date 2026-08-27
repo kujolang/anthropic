@@ -1,0 +1,9 @@
+test_setup { from anthropic import create_client; from provider import anthropic_provider; from src.ai_sdk import sdk_contract_version; from provider import parse_stream }
+test "installed Anthropic exports and transitive AI SDK resolve" {
+	client := create_client({"api_key": "fixture-key"})
+	assert_equal(client["base_url"], "https://api.anthropic.com")
+	assert_equal(anthropic_provider({"model": "fixture"})["driver"]["id"], "anthropic-native")
+	assert_equal(sdk_contract_version(), "1.0.0")
+	parsed := parse_stream(["event: message_stop\ndata: {\"type\":\"message_stop\"}\n\n"], "")
+	assert_true(parsed["ok"]); assert_equal(parsed["events"][0]["data"]["type"], "message_stop")
+}

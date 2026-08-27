@@ -1,0 +1,5 @@
+kennel.lock
+kennel_packages/
+dist/
+build/
+.kennel_tmp/

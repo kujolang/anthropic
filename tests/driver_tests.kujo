@@ -1,0 +1,26 @@
+test_setup { from src.provider import anthropic_provider, anthropic_driver, encode_messages, parse_stream; from src.ai_sdk import create_client, create_message, chat_completion, chat_completion_stream; from tests.fixtures import fake_chat, fake_stream }
+
+test "driver descriptor is native and capability-accurate" {
+	provider := anthropic_provider({"model": "claude-test"}); driver := anthropic_driver()
+	assert_equal(driver["id"], "anthropic-native"); assert_equal(has_key(provider["capabilities"], "embeddings"), 0); assert_equal(driver["version"], "1.0.0")
+}
+test "driver encodes system and content blocks" {
+	provider := anthropic_provider({"model": "claude-test"}); encoded := anthropic_driver()["encode_chat"]({"provider": provider, "credential": "secret", "messages": [{"role": "system", "content": "rules"}, {"role": "user", "content": "hello"}], "resolved_options": {"model": "claude-test", "max_tokens": 20, "stream": false, "tools": [{"type": "function", "function": {"name": "lookup", "parameters": {"type": "object"}}}]}})
+	assert_equal(encoded["url"], "https://api.anthropic.com/v1/messages"); assert_equal(contains(encoded["body"], "anthropic-version" ), 0); assert_equal(contains(encoded["body"], "input_schema"), 1)
+}
+test "AI SDK normalizes native response" {
+	provider := anthropic_provider({"model": "claude-test"}); client := create_client(provider, "secret"); result := chat_completion(client, [create_message("user", "hello")], {"transport": fake_chat, "max_retries": 0})
+	assert_true(result["ok"]); assert_equal(result["output_text"], "normalized"); assert_equal(result["finish_reason"], "stop"); assert_equal(result["usage"]["total_tokens"], 5); assert_equal(result["request_id"], "")
+}
+test "AI SDK normalizes native stream" {
+	provider := anthropic_provider({"model": "claude-test"}); client := create_client(provider, "secret"); result := chat_completion_stream(client, [create_message("user", "hello")], {"transport": fake_stream, "max_retries": 0}, func(event) { return null })
+	assert_true(result["ok"]); assert_equal(result["output_text"], "native"); assert_equal(result["finish_reason"], "stop")
+}
+test "driver maps provider errors without leaking credentials" {
+	decoded := anthropic_driver()["decode_error"]({"status_code": 401, "data": {"type": "error", "error": {"type": "authentication_error", "message": "bad key"}}})
+	assert_true(decoded["matched"]); assert_equal(decoded["category"], "auth"); assert_equal(decoded["provider_code"], "authentication_error")
+}
+test "driver maps tool use blocks and usage" {
+	decoded := anthropic_driver()["decode_chat"]({"fallback_model": "claude-test", "data": {"id": "msg_tool", "model": "claude-test", "content": [{"type": "tool_use", "id": "toolu_1", "name": "lookup", "input": {"city": "Detroit"}}], "stop_reason": "tool_use", "usage": {"input_tokens": 8, "output_tokens": 4}}})
+	assert_equal(decoded["finish_reason"], "tool_calls"); assert_equal(decoded["tool_calls"][0]["function"]["name"], "lookup"); assert_equal(decoded["usage"]["total_tokens"], 12)
+}

@@ -1,0 +1,4 @@
+from anthropic import messages
+
+result := messages({"model": env("ANTHROPIC_MODEL"), "max_tokens": 256, "tools": [{"name": "lookup", "description": "Look up a city", "input_schema": {"type": "object", "properties": {"city": {"type": "string"}}, "required": ["city"]}}], "messages": [{"role": "user", "content": "What is the weather in Detroit?"}]})
+print(result["data"]["content"])

@@ -1,0 +1,85 @@
+# Native Anthropic Messages API client.
+
+func get(obj, key, fallback) { if type(obj) == "dict" && has_key(obj, key) { return obj[key] }; return fallback }
+func trim_slash(value) { result := trim(value); while ends_with(result, "/") { result := substring(result, 0, len(result) - 1) }; return result }
+func host_of(url) { parts := split(url, "/"); if len(parts) >= 3 { return lower(parts[2]) }; return "" }
+func redact(value, secret) { if type(value) == "string" && type(secret) == "string" && secret != "" { return replace(value, secret, "[REDACTED]") }; return value }
+func validate_host(url) {
+	if type(url) != "string" || trim(url) == "" { return {"ok": false, "error": "Anthropic base URL must be a non-empty URL."} }
+	value := trim_slash(url); low := lower(value)
+	if contains(value, "@") || contains(value, "?") || contains(value, "#") || contains(value, "\r") || contains(value, "\n") { return {"ok": false, "error": "Anthropic base URL must not contain credentials, query, fragment, or control characters."} }
+	parts := split(value, "/")
+	if len(parts) < 3 || trim(parts[2]) == "" { return {"ok": false, "error": "Anthropic base URL must include a hostname."} }
+	if starts_with(low, "https://") { return {"ok": true, "host": value} }
+	return {"ok": false, "error": "Anthropic remote endpoints must use HTTPS."}
+}
+func create_client_impl(config) {
+	if type(config) != "dict" { config := {} }
+	host := trim_slash(get(config, "base_url", "https://api.anthropic.com")); check := validate_host(host)
+	api_key := get(config, "api_key", null); if type(api_key) == "null" { api_key := env("ANTHROPIC_API_KEY") }; if type(api_key) != "string" { api_key := "" }
+	return {"base_url": host, "api_key": api_key, "api_version": get(config, "api_version", "2023-06-01"), "timeout": get(config, "timeout", 60.0), "transport": get(config, "transport", null), "beta": get(config, "beta", []), "validation_error": get(check, "error", "")}
+}
+func default_client() { return create_client_impl({}) }
+func headers(client, options) {
+	result := {"Content-Type": "application/json", "x-api-key": client["api_key"], "anthropic-version": client["api_version"]}
+	if type(get(client, "beta", [])) == "array" && len(client["beta"]) > 0 { result["anthropic-beta"] := join(client["beta"], ",") }
+	if type(options) == "dict" && has_key(options, "anthropic_beta") { result["anthropic-beta"] := options["anthropic_beta"] }
+	return result
+}
+func transport_for(client) { if type(get(client, "transport", null)) == "function" { return client["transport"] }; return http_request }
+func request(client, path, payload, stream, options) {
+	if get(client, "validation_error", "") != "" { return Err(client["validation_error"]) }
+	if client["api_key"] == "" { return Err("Anthropic API key is required.") }
+	request_options := {"method": "POST", "timeout": get(client, "timeout", 60.0), "_headers": headers(client, options)}
+	if type(payload) == "dict" { request_options["_body"] := to_json(payload) }; if stream { request_options["stream"] := true }
+	return transport_for(client)(client["base_url"] + path, request_options)
+}
+func response_error(operation, response, client) {
+	status := get(response, "_status", get(response, "status", 0)); body := get(response, "_body", get(response, "body", "")); parsed := null
+	try { parsed = parse_json(body) } except err { parsed = {"error": {"message": body}} }
+	error := get(parsed, "error", {}); message := get(error, "message", get(parsed, "message", "Anthropic request failed")); rid := get(get(response, "_headers", {}), "request-id", "")
+	return {"ok": false, "operation": operation, "status_code": status, "request_id": rid, "message": redact(to_string(message), client["api_key"]), "error_body": redact(body, client["api_key"]), "endpoint": client["base_url"]}
+}
+func finish(operation, response, client) {
+	status := get(response, "_status", get(response, "status", 0)); body := get(response, "_body", get(response, "body", ""))
+	if status < 200 || status > 299 { return response_error(operation, response, client) }
+	parsed := null; try { parsed = parse_json(body) } except err { return {"ok": false, "operation": operation, "status_code": status, "message": "Malformed Anthropic JSON response.", "error_body": "", "endpoint": client["base_url"]} }
+	return {"ok": true, "operation": operation, "status_code": status, "request_id": get(get(response, "_headers", {}), "request-id", ""), "data": parsed}
+}
+func call(client, operation, path, payload, options) {
+	result := request(client, path, payload, false, options)
+	match result {
+		case Ok(response): { return finish(operation, response, client) }
+		case Err(error): { return {"ok": false, "operation": operation, "status_code": 0, "message": redact(to_string(error), client["api_key"]), "error_body": "", "endpoint": client["base_url"]} }
+	}
+}
+func stream_call(client, operation, path, payload, options) {
+	result := request(client, path, payload, true, options)
+	match result {
+		case Ok(response): {
+			status := get(response, "_status", get(response, "status", 0))
+			if status < 200 || status > 299 { return response_error(operation, response, client) }
+			return {"ok": true, "operation": operation, "status_code": status, "request_id": get(get(response, "_headers", {}), "request-id", ""), "stream": parse_stream(get(response, "_stream_chunks", get(response, "stream_chunks", [])), get(response, "_body", get(response, "body", "")))}
+		}
+		case Err(error): { return {"ok": false, "operation": operation, "status_code": 0, "message": redact(to_string(error), client["api_key"]), "error_body": "", "endpoint": client["base_url"]} }
+	}
+}
+func parse_stream_impl(chunks, body) {
+	combined := ""; if type(chunks) == "array" { for chunk in chunks { combined = combined + chunk } } else { combined = body }
+	events := []
+	for block in split(combined, "\n\n") { block := trim(block); if block == "" { continue }; event_name := ""; data_text := ""; for line in split(block, "\n") { if starts_with(line, "event:") { event_name = trim(substring(line, 6, len(line))) }; if starts_with(line, "data:") { data_text = trim(substring(line, 5, len(line))) } }; if data_text != "" { parsed := null; try { parsed = parse_json(data_text) } except err { return {"ok": false, "events": []} }; events = push(events, {"event": event_name, "data": parsed}) } }
+	return {"ok": true, "events": events}
+}
+func messages_with_client(client, options) { if type(options) != "dict" { options := {} }; return call(client, "messages", "/v1/messages", options, options) }
+func messages_stream_with_client(client, options) { if type(options) != "dict" { options := {} }; options["stream"] := true; return stream_call(client, "messages_stream", "/v1/messages", options, options) }
+func count_tokens_with_client(client, options) { return call(client, "count_tokens", "/v1/messages/count_tokens", options, {}) }
+
+export create_client := create_client_impl
+export messages := func(options) { return messages_with_client(default_client(), options) }
+export messages_stream := func(options) { return messages_stream_with_client(default_client(), options) }
+export count_tokens := func(options) { return count_tokens_with_client(default_client(), options) }
+export client_messages := messages_with_client
+export client_messages_stream := messages_stream_with_client
+export client_count_tokens := count_tokens_with_client
+export redact := redact
+export parse_stream := parse_stream_impl
