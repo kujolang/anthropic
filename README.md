@@ -11,7 +11,10 @@ Native Anthropic Messages API support for Kujo, with a first-class Kujo AI SDK p
 An operated public package registry is not available yet, so this release is installed from its immutable GitHub tag:
 
 ```bash
-kujo run /path/to/kennel/kennel.kujo --interpreter -- add github:kujolang/anthropic@v0.1.3 --alias anthropic
+kujo run /path/to/kennel/kennel.kujo \
+  --interpreter \
+  -- add github:kujolang/anthropic@v0.1.3 \
+  --alias anthropic
 kujo run /path/to/kennel/kennel.kujo --interpreter -- install
 ```
 
@@ -80,7 +83,9 @@ bash scripts/verify_installed_package.sh
 The default gate is offline and fixture-backed. Live validation is opt-in:
 
 ```bash
-ANTHROPIC_MODEL=your-current-model ANTHROPIC_API_KEY=... bash scripts/live_smoke.sh
+ANTHROPIC_MODEL=your-current-model \
+ANTHROPIC_API_KEY=... \
+bash scripts/live_smoke.sh
 ```
 
 ## Architecture
