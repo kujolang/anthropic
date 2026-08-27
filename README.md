@@ -1,6 +1,6 @@
 # Anthropic for Kujo
 
-[![Version](https://img.shields.io/badge/version-0.1.2-black)](https://github.com/kujolang/anthropic/releases/tag/v0.1.2)
+[![Version](https://img.shields.io/badge/version-0.1.3-black)](https://github.com/kujolang/anthropic/releases/tag/v0.1.3)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
 [![built with Kujo](https://img.shields.io/badge/built%20with-Kujo-white.svg)](https://github.com/kujolang/kujo)
 
@@ -34,7 +34,7 @@ print(response["data"]["content"][0]["text"])
 
 Set `ANTHROPIC_API_KEY` and `ANTHROPIC_MODEL` before running. Native requests use `https://api.anthropic.com/v1/messages`, `x-api-key`, and `anthropic-version: 2023-06-01`.
 
-## Native Messages API
+## Native API
 
 Use `create_client` for explicit configuration and `client_messages`, `client_messages_stream`, or `client_count_tokens` for requests. Native results preserve Anthropic content blocks, tool use, thinking, usage, stop reasons, request IDs, and stream events.
 
@@ -62,7 +62,7 @@ Native streaming preserves Anthropic SSE events such as `message_start`, `conten
 
 Anthropic uses `ANTHROPIC_API_KEY` and the `x-api-key` header, not Bearer auth. The default API version is `2023-06-01` and can be overridden in `create_client` or provider configuration. Keys are never included in metadata or examples, remote HTTP is rejected, embedded URL credentials are rejected, and custom hosts do not receive credentials unless explicitly configured for that client.
 
-## Testing
+## Testing and documentation
 
 ```bash
 bash scripts/release_quality_gate.sh

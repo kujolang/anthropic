@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+- Standardized README headings with the native provider inventory.
+
 ## 0.1.2 - 2026-08-27
 
 - Standardize README badges and quick-start formatting.
