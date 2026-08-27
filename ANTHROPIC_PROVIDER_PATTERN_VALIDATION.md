@@ -1,5 +1,7 @@
 # Anthropic Provider Pattern Validation
 
+The canonical follow-on standard is [Kujo Provider Package Contract v1](https://github.com/kujolang/ai-sdk/blob/main/docs/KUJO_PROVIDER_PACKAGE_CONTRACT_V1.md). This document remains provider-specific evidence supporting that standard.
+
 ## 1. Executive Summary
 
 The Ollama provider-package pattern generalized, but not as a fixed list of provider operations. Anthropic uses the same native-client/AI-SDK-driver boundary while requiring remote API-key auth, provider headers, a separate system field, content blocks, and a distinct SSE event protocol. Both packages now have remote immutable refs and successful clean-room Kennel evidence.
