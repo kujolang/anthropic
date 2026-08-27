@@ -39,7 +39,7 @@ flowchart TD
 
 ## Kennel Dependency
 
-`kennel.toml` pins `github:kujolang/ai-sdk@v1.1.0`. The package uses early version `0.1.0`, explicit exports, source/include boundaries, and an offline release gate.
+`kennel.toml` pins `github:kujolang/ai-sdk@v1.1.0`. The package uses early version `0.1.1`, explicit exports, source/include boundaries, and an offline release gate.
 
 ## Authentication and API Versioning
 
@@ -71,7 +71,7 @@ Native tests: `6/6` passed. Driver/integration tests: `6/6` passed. Offline rele
 
 ## Clean-Room Installation
 
-`scripts/verify_installed_package.sh` initialized a temporary project outside the source checkouts, installed immutable tag `v0.1.1`, installed twice from the lockfile, validated, unset `KUJO_MODULE_PATH`, and ran the installed consumer smoke: `1/1` passed after the Kujo lockfile-aware resolver change. The final lockfile recorded Anthropic tag object `478c44f59e1b834bb879976bdecb7f81815d60d9` and AI SDK tag object `afc49df688ac73ccfe5ab570eae74df4391aa3c0`.
+`scripts/verify_installed_package.sh` initialized a temporary project outside the source checkouts, installed immutable tag `v0.1.1`, installed twice from the lockfile, validated, configured the installed Anthropic and AI SDK module roots, and ran the installed consumer smoke: `1/1` passed. The final lockfile recorded Anthropic tag object `478c44f59e1b834bb879976bdecb7f81815d60d9` and AI SDK tag object `afc49df688ac73ccfe5ab570eae74df4391aa3c0`.
 
 ## Live Validation
 

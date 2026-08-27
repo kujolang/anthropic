@@ -1,5 +1,6 @@
+.DS_Store
+build/
+dist/
 kennel.lock
 kennel_packages/
-dist/
-build/
-.kennel_tmp/
+*.log

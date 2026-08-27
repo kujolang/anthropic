@@ -59,7 +59,7 @@ Anthropic requires `x-api-key`, `anthropic-version: 2023-06-01`, remote HTTPS, M
 
 ## 8. Platform Friction
 
-The installed consumer still requires explicit `export` statements in root shims, but no longer requires manual `KUJO_MODULE_PATH` entries: Kujo discovers the locked package roots. This is runtime/package ergonomics, not an Anthropic or Ollama provider issue. Kennel did not need changes.
+The installed consumer still requires explicit `export` statements in root shims. The reusable smoke sets `KUJO_MODULE_PATH` to the installed package roots explicitly for deterministic execution. This is runtime/package ergonomics, not an Anthropic or Ollama provider issue. Kennel did not need changes.
 
 ## 9. Recommended Changes Before Scaling
 

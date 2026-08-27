@@ -1,24 +1,34 @@
 # Anthropic for Kujo
 
+[![Version](https://img.shields.io/badge/version-0.1.2-black)](https://github.com/kujolang/anthropic/releases/tag/v0.1.2)
+[![License](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
+[![built with Kujo](https://img.shields.io/badge/built%20with-Kujo-white.svg)](https://github.com/kujolang/kujo)
+
 Native Anthropic Messages API support for Kujo, with a first-class Kujo AI SDK provider driver.
 
 ## Install
 
-The public Kennel registry is not operated yet. From a clean project, install the immutable GitHub tag:
+An operated public package registry is not available yet, so this release is installed from its immutable GitHub tag:
 
 ```bash
-kujo run /path/to/kennel/kennel.kujo --interpreter -- add github:kujolang/anthropic@v0.1.1 --alias anthropic
+kujo run /path/to/kennel/kennel.kujo --interpreter -- add github:kujolang/anthropic@v0.1.2 --alias anthropic
 kujo run /path/to/kennel/kennel.kujo --interpreter -- install
 ```
 
-Installed consumers are importable from the Kennel project directory without manually setting `KUJO_MODULE_PATH`; Kujo derives roots from the nearest `kennel.lock`. The reusable `scripts/verify_installed_package.sh` demonstrates the complete flow.
+The `[registry]` URLs in `kennel.toml` are intentionally empty until a public registry service is operated. Do not use `kennel add anthropic` yet. The reusable `scripts/verify_installed_package.sh` demonstrates the complete GitHub-tag installation flow.
 
 ## 30-second quick start
 
 ```kujo
 from anthropic import messages
 
-response := messages({"model": env("ANTHROPIC_MODEL"), "max_tokens": 256, "messages": [{"role": "user", "content": "Hello from Kujo!"}]})
+response := messages({
+    "model": env("ANTHROPIC_MODEL"),
+    "max_tokens": 256,
+    "messages": [
+        {"role": "user", "content": "Hello from Kujo!"}
+    ]
+})
 print(response["data"]["content"][0]["text"])
 ```
 
@@ -70,3 +80,7 @@ ANTHROPIC_MODEL=your-current-model ANTHROPIC_API_KEY=... bash scripts/live_smoke
 The native client owns Anthropic fidelity. The AI SDK driver owns only translation to and from normalized semantic fields; AI SDK core remains responsible for transport, retries, endpoint policy, protected headers, redaction, and final normalized envelopes.
 
 Official evidence inspected 2026-08-26: [Messages API](https://docs.anthropic.com/en/api/messages), [streaming](https://docs.anthropic.com/en/docs/build-with-claude/streaming), [tool use](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/implement-tool-use), and the [official Python](https://github.com/anthropics/anthropic-sdk-python) and [TypeScript](https://github.com/anthropics/anthropic-sdk-typescript) clients.
+
+## Documentation
+
+See [the package documentation](docs/) for implementation and provider-pattern evidence.
