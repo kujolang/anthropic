@@ -25,7 +25,7 @@ The Ollama provider-package pattern generalized, but not as a fixed list of prov
 | `src/provider.kujo` driver hooks | Same hooks, no embeddings capability | Capability metadata is optional per operation. |
 | Buffered native stream parser | SSE events with event names and content blocks | Native parser preserves provider events; driver normalizes only common semantics. |
 | Message-array encoding | Top-level `system` plus block arrays | Driver may structurally translate normalized messages. |
-| Package-root imports | Same, plus explicit installed `KUJO_MODULE_PATH` roots | Root shims must explicitly export imports; runtime package-root loading remains documented. |
+| Package-root imports | Same, with lockfile-discovered installed roots | Root shims must explicitly export imports; runtime discovery is project-scoped and lockfile-driven. |
 | One native response envelope | Multiple native content blocks | Native fidelity is the invariant, not a single output string. |
 
 ## 4. Ollama-Specific Conventions
@@ -67,7 +67,7 @@ Kujo now exposes locked installed package roots automatically. Kennel exports st
 
 ## 10. Verdict
 
-Two providers provide sufficient evidence to freeze a Provider Package Contract v1 draft, while the contract artifact itself remains a later task. The universal boundary is supported; provider capabilities and wire semantics remain provider-owned.
+Two providers provide sufficient evidence for the current Provider Package Contract v1; its patch clarification records lockfile-driven import discovery. The universal boundary is supported; provider capabilities and wire semantics remain provider-owned.
 
 ## Ready to Freeze Provider Package Contract v1?
 
