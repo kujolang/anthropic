@@ -12,10 +12,9 @@ An operated public package registry is not available yet, so this release is ins
 
 ```bash
 kujo run /path/to/kennel/kennel.kujo \
-  --interpreter \
   -- add github:kujolang/anthropic@v0.1.3 \
   --alias anthropic
-kujo run /path/to/kennel/kennel.kujo --interpreter -- install
+kujo run /path/to/kennel/kennel.kujo -- install
 ```
 
 The `[registry]` URLs in `kennel.toml` are intentionally empty until a public registry service is operated. Do not use `kennel add anthropic` yet. The reusable `scripts/verify_installed_package.sh` demonstrates the complete GitHub-tag installation flow.
